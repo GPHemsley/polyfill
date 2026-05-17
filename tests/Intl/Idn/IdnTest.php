@@ -31,6 +31,7 @@ class IdnTest extends TestCase
         'P4' => [
             Idn::ERROR_EMPTY_LABEL,
             Idn::ERROR_DOMAIN_NAME_TOO_LONG,
+            Idn::ERROR_INVALID_ACE_LABEL,
             Idn::ERROR_LABEL_TOO_LONG,
             Idn::ERROR_PUNYCODE,
         ],
@@ -86,16 +87,28 @@ class IdnTest extends TestCase
                 array_map('trim', explode(';', $line))
             );
 
+            if ('' === $source) {
+                // UNDEFINED
+            } elseif ('""' === $source) {
+                $source = '';
+            }
+
             if ('' === $toUnicode) {
                 $toUnicode = $source;
+            } elseif ('""' === $toUnicode) {
+                $toUnicode = '';
             }
 
             if ('' === $toAsciiN) {
                 $toAsciiN = $toUnicode;
+            } elseif ('""' === $toAsciiN) {
+                $toAsciiN = '';
             }
 
             if ('' === $toAsciiT) {
                 $toAsciiT = $toAsciiN;
+            } elseif ('""' === $toAsciiT) {
+                $toAsciiT = '';
             }
 
             $toUnicodeStatus = self::resolveErrorCodes($toUnicodeStatus, []);
@@ -513,7 +526,7 @@ class IdnTest extends TestCase
         $errors = [];
 
         foreach ($matches[0] as $match) {
-            if ('U' === $match[0]) {
+            if ('U1' === $match) {
                 continue;
             }
 

@@ -164,18 +164,18 @@ final class Idn
         $info = new Info();
         $labels = self::process((string) $domainName, $options, $info);
 
-        foreach ($labels as $i => $label) {
-            // Only convert labels to punycode that contain non-ASCII code points
-            if (1 === preg_match('/[^\x00-\x7F]/', $label)) {
-                try {
-                    $label = 'xn--'.self::punycodeEncode($label);
-                } catch (\Exception $e) {
-                    $info->errors |= self::ERROR_PUNYCODE;
-                }
+        // foreach ($labels as $i => $label) {
+        //     // Only convert labels to punycode that contain non-ASCII code points
+        //     if (1 === preg_match('/[^\x00-\x7F]/', $label)) {
+        //         try {
+        //             $label = 'xn--'.self::punycodeEncode($label);
+        //         } catch (\Exception $e) {
+        //             $info->errors |= self::ERROR_PUNYCODE;
+        //         }
 
-                $labels[$i] = $label;
-            }
-        }
+        //         $labels[$i] = $label;
+        //     }
+        // }
 
         if ($options['VerifyDnsLength']) {
             self::validateDomainAndLabelLength($labels, $info);
@@ -370,6 +370,12 @@ final class Idn
                     continue;
                 }
 
+                // Step 4.3. If the label is empty, or if the label contains only ASCII code points, record that there
+                // was an error.
+                if ('' === $label || !preg_match('/[^\x00-\x7F]/', $label)) {
+                    $info->errors |= self::ERROR_INVALID_ACE_LABEL;
+                }
+
                 $validationOptions['Transitional_Processing'] = false;
                 $labels[$i] = $label;
             }
@@ -533,20 +539,21 @@ final class Idn
                 $info->errors |= self::ERROR_TRAILING_HYPHEN;
             }
         } elseif ('xn--' === substr($label, 0, 4)) {
+            // Step 4. If not CheckHyphens, the label must not begin with “xn--”.
             $info->errors |= self::ERROR_PUNYCODE;
         }
 
-        // Step 4. The label must not contain a U+002E (.) FULL STOP.
+        // Step 5. The label must not contain a U+002E (.) FULL STOP.
         if (false !== strpos($label, '.')) {
             $info->errors |= self::ERROR_LABEL_HAS_DOT;
         }
 
-        // Step 5. The label must not begin with a combining mark, that is: General_Category=Mark.
+        // Step 6. The label must not begin with a combining mark, that is: General_Category=Mark.
         if (1 === preg_match(Regex::COMBINING_MARK, $label)) {
             $info->errors |= self::ERROR_LEADING_COMBINING_MARK;
         }
 
-        // Step 6. Each code point in the label must only have certain status values according to
+        // Step 7. Each code point in the label must only have certain Status values according to
         // Section 5, IDNA Mapping Table:
         $transitional = $options['Transitional_Processing'];
         $useSTD3ASCIIRules = $options['UseSTD3ASCIIRules'];
@@ -555,7 +562,9 @@ final class Idn
             $data = self::lookupCodePointStatus($codePoint, $useSTD3ASCIIRules);
             $status = $data['status'];
 
-            if ('valid' === $status || (!$transitional && 'deviation' === $status)) {
+            $invalidASCII = ($useSTD3ASCIIRules && 1 === preg_match('/[^\x00-\x7F]/', $label) && !preg_match('/[a-z0-9-]/', $label));
+
+            if ('valid' === $status || (!$transitional && 'deviation' === $status) || $invalidASCII) {
                 continue;
             }
 
@@ -564,14 +573,14 @@ final class Idn
             break;
         }
 
-        // Step 7. If CheckJoiners, the label must satisify the ContextJ rules from Appendix A, in
+        // Step 8. If CheckJoiners, the label must satisify the ContextJ rules from Appendix A, in
         // The Unicode Code Points and Internationalized Domain Names for Applications (IDNA)
         // [IDNA2008].
         if ($options['CheckJoiners'] && !self::isValidContextJ($codePoints, $label)) {
             $info->errors |= self::ERROR_CONTEXTJ;
         }
 
-        // Step 8. If CheckBidi, and if the domain name is a  Bidi domain name, then the label must
+        // Step 9. If CheckBidi, and if the domain name is a Bidi domain name, then the label must
         // satisfy all six of the numbered conditions in [IDNA2008] RFC 5893, Section 2.
         if ($options['CheckBidi'] && (!$info->bidiDomain || $info->validBidiDomain)) {
             self::validateBidiLabel($label, $info);
@@ -900,8 +909,6 @@ final class Idn
             self::$ignored = require __DIR__.'/Resources/unidata/ignored.php';
             self::$deviation = require __DIR__.'/Resources/unidata/deviation.php';
             self::$disallowed = require __DIR__.'/Resources/unidata/disallowed.php';
-            self::$disallowed_STD3_mapped = require __DIR__.'/Resources/unidata/disallowed_STD3_mapped.php';
-            self::$disallowed_STD3_valid = require __DIR__.'/Resources/unidata/disallowed_STD3_valid.php';
         }
 
         if (isset(self::$mapped[$codePoint])) {
@@ -918,22 +925,6 @@ final class Idn
 
         if (isset(self::$disallowed[$codePoint]) || DisallowedRanges::inRange($codePoint)) {
             return ['status' => 'disallowed'];
-        }
-
-        $isDisallowedMapped = isset(self::$disallowed_STD3_mapped[$codePoint]);
-
-        if ($isDisallowedMapped || isset(self::$disallowed_STD3_valid[$codePoint])) {
-            $status = 'disallowed';
-
-            if (!$useSTD3ASCIIRules) {
-                $status = $isDisallowedMapped ? 'mapped' : 'valid';
-            }
-
-            if ($isDisallowedMapped) {
-                return ['status' => $status, 'mapping' => self::$disallowed_STD3_mapped[$codePoint]];
-            }
-
-            return ['status' => $status];
         }
 
         return ['status' => 'valid'];
