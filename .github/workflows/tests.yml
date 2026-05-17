@@ -57,5 +57,5 @@ jobs:
             -   name: Run tests
                 run: |
                     ok=0
-                    ./phpunit || ok=1
+                    ./phpunit --colors=never --no-interaction --fail-on-warning --fail-on-risky || ok=1
                     [[ "${{ matrix.mode }}" = experimental ]] || (exit $ok)
