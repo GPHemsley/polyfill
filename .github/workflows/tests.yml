@@ -15,17 +15,34 @@ jobs:
 
         strategy:
             matrix:
-                include:
-                    - php: '7.2'
-                    - php: '7.3'
-                    - php: '7.4'
-                    - php: '8.0'
-                    - php: '8.1'
-                    - php: '8.2'
-                    - php: '8.3'
-                    - php: '8.4'
-                    - php: '8.5'
-                    - php: '8.6'
+                php: [
+                    '7.2',
+                    '7.3',
+                    '7.4',
+                    '8.0',
+                    '8.1',
+                    '8.2',
+                    '8.3',
+                    '8.4',
+                    '8.5',
+                    '8.6',
+                ]
+                icu: [
+                    '50.2',  # Unicode 6.2
+                    '52.2',  # Unicode 6.3
+                    '54.2',  # Unicode 7.0
+                    '56.2',  # Unicode 8.0
+                    '58.3',  # Unicode 9.0
+                    '60.3',  # Unicode 10.0
+                    '62.2',  # Unicode 11.0
+                    '64.2',  # Unicode 12.0
+                    '66.1',  # Unicode 13
+                    '70.1',  # Unicode 14
+                    '72.1',  # Unicode 15
+                    '74.2',  # Unicode 15.1
+                    '76.1',  # Unicode 16, Symfony 5.4
+                    '78.3',  # Unicode 17, Symfony 6.4
+                ]
             fail-fast: false
 
         steps:
@@ -36,7 +53,7 @@ jobs:
                 uses: shivammathur/setup-php@v2
                 with:
                     coverage: "none"
-                    extensions: "apcu, intl-73.2, mbstring, odbc, uuid, mongodb"
+                    extensions: "apcu, intl-${{ matrix.icu }}, mbstring, odbc, uuid, mongodb"
                     ini-values: "memory_limit=-1, session.gc_probability=0, apc.enable_cli=1"
                     php-version: "${{ matrix.php }}"
                     tools: "composer:v2"
