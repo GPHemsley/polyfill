@@ -32,10 +32,10 @@ class TestListenerTrait
             if (!$tests = $suite->tests()) {
                 continue;
             }
-            if (\in_array('class-polyfill', Test::getGroups($testClass), true)) {
-                // TODO: check signatures for all polyfilled methods on PHP >= 8
-                continue;
-            }
+            // if (\in_array('class-polyfill', Test::getGroups($testClass), true)) {
+            //     // TODO: check signatures for all polyfilled methods on PHP >= 8
+            //     continue;
+            // }
             $testedClass = new \ReflectionClass($testClass);
             if (preg_match('{^ \* @requires PHP (.*)}mi', $testedClass->getDocComment(), $m) && version_compare($m[1], \PHP_VERSION, '>')) {
                 continue;
@@ -49,12 +49,24 @@ class TestListenerTrait
             }
             $testedClass = new \ReflectionClass($m[1].$m[2]);
             $bootstrap = \dirname($testedClass->getFileName()).'/bootstrap';
-            if (\PHP_VERSION_ID >= 80200 && file_exists($bootstrap.'82.php')) {
+            if (\PHP_VERSION_ID >= 80600 && file_exists($bootstrap.'86.php')) {
+                $bootstrap .= '86';
+            } elseif (\PHP_VERSION_ID >= 80500 && file_exists($bootstrap.'85.php')) {
+                $bootstrap .= '85';
+            } elseif (\PHP_VERSION_ID >= 80400 && file_exists($bootstrap.'84.php')) {
+                $bootstrap .= '84';
+            } elseif (\PHP_VERSION_ID >= 80300 && file_exists($bootstrap.'83.php')) {
+                $bootstrap .= '83';
+            } elseif (\PHP_VERSION_ID >= 80200 && file_exists($bootstrap.'82.php')) {
                 $bootstrap .= '82';
             } elseif (\PHP_VERSION_ID >= 80100 && file_exists($bootstrap.'81.php')) {
                 $bootstrap .= '81';
             } elseif (\PHP_VERSION_ID >= 80000 && file_exists($bootstrap.'80.php')) {
                 $bootstrap .= '80';
+            } elseif (\PHP_VERSION_ID >= 70400 && file_exists($bootstrap.'74.php')) {
+                $bootstrap .= '74';
+            } elseif (\PHP_VERSION_ID >= 70300 && file_exists($bootstrap.'73.php')) {
+                $bootstrap .= '73';
             }
             $bootstrap = new \SplFileObject($bootstrap.'.php');
             $newWarnings = 0;
@@ -121,15 +133,16 @@ function {$f['name']}{$f['signature']}
 EOPHP
                 );
 
-                if (\PHP_VERSION_ID >= 80000 && $r && false === strpos($bootstrap->getPath(), 'Php7') && false === strpos($bootstrap->getPath(), 'Php80')) {
+                // if (\PHP_VERSION_ID >= 80000 && $r && false === strpos($bootstrap->getPath(), 'Php7') && false === strpos($bootstrap->getPath(), 'Php80')) {
+                if ($r) {
                     $originalSignature = ReflectionCaster::getSignature(ReflectionCaster::castFunctionAbstract($r, [], new Stub(), true));
                     $polyfillSignature = ReflectionCaster::castFunctionAbstract(new \ReflectionFunction($testNamespace.'\\'.$f['name']), [], new Stub(), true);
                     $polyfillSignature = ReflectionCaster::getSignature($polyfillSignature);
 
-                    if ('mb_get_info' === $r->name && false === strpos($originalSignature, '|null') && false !== strpos($polyfillSignature, '|null')) {
-                        // Added to PHP 8.2.14/8.3.1
-                        $originalSignature .= '|null';
-                    }
+                    // if ('mb_get_info' === $r->name && false === strpos($originalSignature, '|null') && false !== strpos($polyfillSignature, '|null')) {
+                    //     // Added to PHP 8.2.14/8.3.1
+                    //     $originalSignature .= '|null';
+                    // }
 
                     if (str_ends_with($bootstrap->getPath(), 'bootstrap.php')) {
                         // mixed return type cannot be used before PHP 8
@@ -144,7 +157,7 @@ EOPHP
                     ];
 
                     if (strtr($polyfillSignature, $map) !== str_replace('?', '', $originalSignature)) {
-                        $warnings[] = TestListener::warning("Incompatible signature for PHP >= 8 in {$bootstrap->getPathname()}:\n- {$f['name']}$originalSignature\n+ {$f['name']}$polyfillSignature");
+                        $warnings[] = TestListener::warning("Incompatible signature for PHP >= ".\PHP_MAJOR_VERSION.'.'.\PHP_MINOR_VERSION." in {$bootstrap->getPathname()}:\n- {$f['name']}$originalSignature\n+ {$f['name']}$polyfillSignature");
                     }
                 }
             }
