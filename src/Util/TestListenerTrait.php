@@ -144,10 +144,10 @@ EOPHP
                     //     $originalSignature .= '|null';
                     // }
 
-                    if (str_ends_with($bootstrap->getPath(), 'bootstrap.php')) {
-                        // mixed return type cannot be used before PHP 8
-                        $originalSignature = str_replace(': mixed', '', $originalSignature);
-                    }
+                    // if (str_ends_with($bootstrap->getPath(), 'bootstrap.php')) {
+                    //     // mixed return type cannot be used before PHP 8
+                    //     $originalSignature = str_replace(': mixed', '', $originalSignature);
+                    // }
 
                     $map = [
                         '?' => '',
