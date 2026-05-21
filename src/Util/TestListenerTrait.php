@@ -43,12 +43,12 @@ class TestListenerTrait
             //     continue;
             // }
             $testedClass = new \ReflectionClass($testClass);
-            if (preg_match('{^ \* @requires PHP (.*)}mi', $testedClass->getDocComment(), $m) && version_compare($m[1], \PHP_VERSION, '>')) {
-                continue;
-            }
-            if (preg_match('{^ \* @requires extension (.*)}mi', $testedClass->getDocComment(), $m) && !extension_loaded($m[1])) {
-                continue;
-            }
+            // if (preg_match('{^ \* @requires PHP (.*)}mi', $testedClass->getDocComment(), $m) && version_compare($m[1], \PHP_VERSION, '>')) {
+            //     continue;
+            // }
+            // if (preg_match('{^ \* @requires extension (.*)}mi', $testedClass->getDocComment(), $m) && !extension_loaded($m[1])) {
+            //     continue;
+            // }
             if (!preg_match('/^(.+)\\\\Tests(\\\\.*)Test$/', $testClass, $m)) {
                 $mainSuite->addTest(TestListener::warning('Unknown naming convention for '.$testClass));
                 continue;
