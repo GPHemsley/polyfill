@@ -27,6 +27,12 @@ class TestListenerTrait
     {
         $warnings = [];
 
+        $supported_versions = [
+            '72', '73', '74',
+            '80', '81', '82', '83', '84',
+            '85', '86',
+        ];
+
         foreach ($mainSuite->tests() as $suite) {
             $testClass = $suite->getName();
             if (!$tests = $suite->tests()) {
@@ -48,27 +54,42 @@ class TestListenerTrait
                 continue;
             }
             $testedClass = new \ReflectionClass($m[1].$m[2]);
-            $bootstrap = \dirname($testedClass->getFileName()).'/bootstrap';
-            if (\PHP_VERSION_ID >= 80600 && file_exists($bootstrap.'86.php')) {
-                $bootstrap .= '86';
-            } elseif (\PHP_VERSION_ID >= 80500 && file_exists($bootstrap.'85.php')) {
-                $bootstrap .= '85';
-            } elseif (\PHP_VERSION_ID >= 80400 && file_exists($bootstrap.'84.php')) {
-                $bootstrap .= '84';
-            } elseif (\PHP_VERSION_ID >= 80300 && file_exists($bootstrap.'83.php')) {
-                $bootstrap .= '83';
-            } elseif (\PHP_VERSION_ID >= 80200 && file_exists($bootstrap.'82.php')) {
-                $bootstrap .= '82';
-            } elseif (\PHP_VERSION_ID >= 80100 && file_exists($bootstrap.'81.php')) {
-                $bootstrap .= '81';
-            } elseif (\PHP_VERSION_ID >= 80000 && file_exists($bootstrap.'80.php')) {
-                $bootstrap .= '80';
-            } elseif (\PHP_VERSION_ID >= 70400 && file_exists($bootstrap.'74.php')) {
-                $bootstrap .= '74';
-            } elseif (\PHP_VERSION_ID >= 70300 && file_exists($bootstrap.'73.php')) {
-                $bootstrap .= '73';
+
+            $bootstrap_files = [];
+            foreach ($supported_versions as $i => $version) {
+                if (0 === $i) { $version = ''; }
+
+                $path = \dirname($testedClass->getFileName())."/bootstrap{$version}.php";
+
+                if (file_exists($path)) {
+                    $bootstrap_files[$version] = new \SplFileObject($path);
+                }
             }
-            $bootstrap = new \SplFileObject($bootstrap.'.php');
+
+            $bootstrap = new \SplTempFileObject();
+            $bootstrap_file = $bootstrap_files[''];
+            while ($bootstrap_file->valid() && $line = $bootstrap_file->fgets()) {
+                if (\preg_match('/if\s*\(\s*\\\PHP_VERSION_ID\s*>=\s*(\d+)\s*\)/', $line, $m) && \PHP_VERSION_ID >= $m[1]) {
+                    $line = $bootstrap_file->fgets();
+
+                    if (\preg_match('/return\s*;/', $line)) {
+                        break;
+                    }
+                    
+                    if (\preg_match('/return\s*require.*\/bootstrap(\d*)\.php.*;/', $line, $m)) {
+                        $bootstrap_file = $bootstrap_files[$m[1]];
+                        $bootstrap_file->fgets();
+                        continue;
+                    }
+                }
+
+                $bootstrap->fwrite($line);
+            }
+
+            $bootstrap->rewind();
+
+            // var_dump($bootstrap->fpassthru()) && $bootstrap->rewind();
+
             $newWarnings = 0;
             $defLine = null;
 
@@ -134,7 +155,7 @@ EOPHP
                 );
 
                 // if (\PHP_VERSION_ID >= 80000 && $r && false === strpos($bootstrap->getPath(), 'Php7') && false === strpos($bootstrap->getPath(), 'Php80')) {
-                if ($r) {
+                if (/* \PHP_VERSION_ID >= 80100 && */ $r) {
                     $originalSignature = ReflectionCaster::getSignature(ReflectionCaster::castFunctionAbstract($r, [], new Stub(), true));
                     $polyfillSignature = ReflectionCaster::castFunctionAbstract(new \ReflectionFunction($testNamespace.'\\'.$f['name']), [], new Stub(), true);
                     $polyfillSignature = ReflectionCaster::getSignature($polyfillSignature);
