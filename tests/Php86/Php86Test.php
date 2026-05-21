@@ -186,6 +186,8 @@ class Php86Test extends TestCase
 
     /**
      * @dataProvider provideGraphemeStrrev
+     * 
+     * @requires extension intl
      */
     public function testGraphemeStrrev(string $expected, string $string)
     {
@@ -208,6 +210,9 @@ class Php86Test extends TestCase
         ];
     }
 
+    /**
+     * @requires extension intl
+     */
     public function testGraphemeStrrevInvalidUtf8()
     {
         $this->assertFalse(grapheme_strrev("\xFF"));

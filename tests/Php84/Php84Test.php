@@ -18,6 +18,8 @@ class Php84Test extends TestCase
 {
     /**
      * @dataProvider ucFirstDataProvider
+     * 
+     * @requires extension mbstring
      */
     public function testMbUcFirst(string $string, string $expected)
     {
@@ -26,6 +28,8 @@ class Php84Test extends TestCase
 
     /**
      * @dataProvider lcFirstDataProvider
+     * 
+     * @requires extension mbstring
      */
     public function testMbLcFirst(string $string, string $expected)
     {
@@ -201,6 +205,8 @@ class Php84Test extends TestCase
      * @covers \Symfony\Polyfill\Php84\Php84::mb_trim
      *
      * @dataProvider mbTrimProvider
+     * 
+     * @requires extension mbstring
      */
     public function testMbTrim(string $expected, string $string, ?string $characters = null, ?string $encoding = null)
     {
@@ -211,6 +217,8 @@ class Php84Test extends TestCase
      * @covers \Symfony\Polyfill\Php84\Php84::mb_ltrim
      *
      * @dataProvider mbLTrimProvider
+     * 
+     * @requires extension mbstring
      */
     public function testMbLTrim(string $expected, string $string, ?string $characters = null, ?string $encoding = null)
     {
@@ -221,6 +229,8 @@ class Php84Test extends TestCase
      * @covers \Symfony\Polyfill\Php84\Php84::mb_rtrim
      *
      * @dataProvider mbRTrimProvider
+     * 
+     * @requires extension mbstring
      */
     public function testMbRTrim(string $expected, string $string, ?string $characters = null, ?string $encoding = null)
     {
@@ -229,6 +239,8 @@ class Php84Test extends TestCase
 
     /**
      * @requires PHP 8
+     * 
+     * @requires extension mbstring
      */
     public function testMbTrimException()
     {
@@ -240,6 +252,8 @@ class Php84Test extends TestCase
 
     /**
      * @requires PHP < 8
+     * 
+     * @requires extension mbstring
      */
     public function testMbTrimExceptionOnPhp7()
     {
@@ -257,6 +271,9 @@ class Php84Test extends TestCase
         }
     }
 
+    /**
+     * @requires extension mbstring
+     */
     public function testMbTrimEncoding()
     {
         $this->assertSame('あ', mb_convert_encoding(mb_trim("\x81\x40\x82\xa0\x81\x40", "\x81\x40", 'SJIS'), 'UTF-8', 'SJIS'));
@@ -264,6 +281,9 @@ class Php84Test extends TestCase
         $this->assertSame('6f225b57', bin2hex(mb_ltrim(mb_convert_encoding("\u{FEFF}漢字", 'UTF-16BE', 'UTF-8'), mb_convert_encoding("\u{FFFE}\u{FEFF}", 'UTF-16BE', 'UTF-8'), 'UTF-16BE')));
     }
 
+    /**
+     * @requires extension mbstring
+     */
     public function testMbTrimCharactersEncoding()
     {
         $strUtf8 = "\u{3042}\u{3000}";
@@ -690,6 +710,8 @@ class Php84Test extends TestCase
 
     /**
      * @dataProvider graphemeStrSplitDataProvider
+     * 
+     * @requires extension intl
      */
     public function testGraphemeStrSplit(string $string, int $length, array $expectedValues)
     {
