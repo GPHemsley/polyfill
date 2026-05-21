@@ -43,10 +43,12 @@ class TestListenerTrait
             //     continue;
             // }
             $testedClass = new \ReflectionClass($testClass);
-            if (preg_match('{^ \* @requires PHP\s*([<>!=]?=?)?\s*(.*)}mi', $testedClass->getDocComment(), $m) && version_compare($m[2], \PHP_VERSION, $m[1] ?: '>')) {
+            if (preg_match('{^ \* @requires PHP\s*([<>!=]?=?)?\s*(.*)}mi', $testedClass->getDocComment(), $m) && !version_compare(\PHP_VERSION, $m[2], $m[1] ?: '>=')) {
+                $mainSuite->addTest(TestListener::warning("PHP version not {$m[1]}{$m[2]}"));
                 continue;
             }
             if (preg_match('{^ \* @requires extension (.*)}mi', $testedClass->getDocComment(), $m) && !extension_loaded($m[1])) {
+                $mainSuite->addTest(TestListener::warning("Extension {$m[1]} not loaded"));
                 continue;
             }
             if (!preg_match('/^(.+)\\\\Tests(\\\\.*)Test$/', $testClass, $m)) {
@@ -54,6 +56,7 @@ class TestListenerTrait
                 continue;
             }
             if (!class_exists($m[1].$m[2])) {
+                $mainSuite->addTest(TestListener::warning("Class {$m[1]}{$m[2]} does not exist"));
                 continue;
             }
             $testedClass = new \ReflectionClass($m[1].$m[2]);
