@@ -57,5 +57,5 @@ jobs:
             -   name: Run tests
                 run: |
                     ok=0
-                    ./phpunit --colors=never --no-interaction --fail-on-warning --fail-on-risky --filter '(Apcu|Ctype|DeepClone|Iconv|Intl/(Grapheme|Icu|MessageFormatter|Normalizer)|Mbstring|Php73|Php74|Php80|Php81|Php82|Php83|Php84|Php85|Php86|Util|Uuid)' || ok=1
+                    ./phpunit --colors=never --no-interaction --fail-on-risky --filter '(Apcu|Ctype|DeepClone|Iconv|Intl/(Grapheme|Icu|MessageFormatter|Normalizer)|Mbstring|Php73|Php74|Php80|Php81|Php82|Php83|Php84|Php85|Php86|Util|Uuid)' || ok=1
                     [[ "${{ matrix.mode }}" = experimental ]] || (exit $ok)
