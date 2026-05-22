@@ -36,9 +36,7 @@ if (extension_loaded('intl') && !function_exists('locale_is_right_to_left')) {
 }
 
 if (\PHP_VERSION_ID >= 80000) {
-    require __DIR__.'/bootstrap80.php';
-
-    return;
+    return require __DIR__.'/bootstrap80.php';
 }
 
 if (extension_loaded('intl') && !function_exists('grapheme_levenshtein')) {

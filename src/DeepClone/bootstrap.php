@@ -16,5 +16,5 @@ if (extension_loaded('deepclone')) {
 }
 
 if (\PHP_VERSION_ID >= 80100) {
-    require __DIR__.'/bootstrap81.php';
+    return require __DIR__.'/bootstrap81.php';
 }
