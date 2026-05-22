@@ -65,6 +65,7 @@ class Php84Test extends TestCase
     }
 
     /**
+     * @requires PHP 8.4
      * @requires extension curl
      */
     public function testCurlHttp3Constants()

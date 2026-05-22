@@ -19,6 +19,9 @@ use PHPUnit\Framework\TestCase;
  */
 class Php73Test extends TestCase
 {
+    /**
+     * @requires extension simplexml
+     */
     public function testIsCountable()
     {
         $this->assertTrue(is_countable([1, 2, '3']));
