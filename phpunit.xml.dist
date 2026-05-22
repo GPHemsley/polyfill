@@ -25,7 +25,7 @@
         </whitelist>
     </filter>
 
-    <listeners>
+    <!--listeners>
         <listener class="Symfony\Polyfill\Util\TestListener" />
-    </listeners>
+    </listeners-->
 </phpunit>
