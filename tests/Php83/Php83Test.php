@@ -153,13 +153,13 @@ class Php83Test extends TestCase
     public static function jsonDataProvider(): iterable
     {
         yield [false, '', 'Syntax error'];
-        yield [false, '.', 'Syntax error'];
-        yield [false, '<?>', 'Syntax error'];
-        yield [false, ';', 'Syntax error'];
-        yield [false, 'руссиш', 'Syntax error'];
-        yield [false, 'blah', 'Syntax error'];
-        yield [false, '{ "": "": "" } }', 'Syntax error'];
-        yield [false, '{ "test": {} "foo": "bar" }, "test2": {"foo" : "bar" }, "test2": {"foo" : "bar" } }', 'Syntax error'];
+        yield [false, '.', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:1'];
+        yield [false, '<?>', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:1'];
+        yield [false, ';', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:1'];
+        yield [false, 'руссиш', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:1'];
+        yield [false, 'blah', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:1'];
+        yield [false, '{ "": "": "" } }', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:9'];
+        yield [false, '{ "test": {} "foo": "bar" }, "test2": {"foo" : "bar" }, "test2": {"foo" : "bar" } }', (\PHP_VERSION_ID < 80600) ? 'Syntax error' : 'Syntax error near location 1:14'];
         yield [true, '{ "test": { "foo": "bar" } }'];
         yield [true, '{ "test": { "foo": "" } }'];
         yield [true, '{ "": { "foo": "" } }'];
@@ -167,8 +167,8 @@ class Php83Test extends TestCase
         yield [true, '{ "test": {"foo": "bar"}, "test2": {"foo" : "bar" }, "test2": {"foo" : "bar" } }'];
         yield [true, '{ "test": {"foo": "bar"}, "test2": {"foo" : "bar" }, "test3": {"foo" : "bar" } }'];
         yield [true, '{ "\u0000null": "test" }'];
-        yield [false, '{"key1":"value1", "key2":"value2"}', 'Maximum stack depth exceeded', 1];
-        yield [false, "\"a\xb0b\"", 'Malformed UTF-8 characters, possibly incorrectly encoded'];
+        yield [false, '{"key1":"value1", "key2":"value2"}', (\PHP_VERSION_ID < 80600) ? 'Maximum stack depth exceeded' : 'Maximum stack depth exceeded near location 1:1', 1];
+        yield [false, "\"a\xb0b\"", (\PHP_VERSION_ID < 80600) ? 'Malformed UTF-8 characters, possibly incorrectly encoded' : 'Malformed UTF-8 characters, possibly incorrectly encoded near location 1:1'];
         yield [true, '{ "test": { "foo": "bar" } }', 'No error', 2147483647];
 
         if (\defined('JSON_INVALID_UTF8_IGNORE')) {
