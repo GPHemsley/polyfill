@@ -16,14 +16,18 @@ if (\PHP_VERSION_ID >= 80400) {
 }
 
 if (\extension_loaded('curl')) {
-    // CURL_VERSION_HTTP3 is defined by PHP 8.2+ when libcurl >= 7.66.0
-    if (defined('CURL_VERSION_HTTP3') || \PHP_VERSION_ID < 80200 && curl_version()['version_number'] >= 0x074200) {
+    // cURL >= 7.66.0
+    // CURL_VERSION_HTTP3 means >= cURL 7.66.0, PHP 8.2.0
+    // CURLOPT_ISSUERCERT_BLOB means >= cURL 7.71.0, PHP 8.1.0
+    if (defined('CURL_VERSION_HTTP3') || defined('CURLOPT_ISSUERCERT_BLOB') || curl_version()['version_number'] >= 0x074200) {
         if (!defined('CURL_HTTP_VERSION_3')) {
             define('CURL_HTTP_VERSION_3', 30);
         }
 
-        // CURL_HTTP_VERSION_3ONLY requires libcurl >= 7.88.0 and is not gated by any PHP-defined constant before 8.4
-        if (!defined('CURL_HTTP_VERSION_3ONLY') && curl_version()['version_number'] >= 0x075800) {
+        // cURL >= 7.88.0
+        // CURLOPT_ISSUERCERT_BLOB means >= cURL 7.71.0, PHP 8.1.0
+        // CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256 means >= 7.80.0, PHP 8.2.0
+        if (!defined('CURL_HTTP_VERSION_3ONLY') && defined('CURLOPT_ISSUERCERT_BLOB') && defined('CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256') && curl_version()['version_number'] >= 0x075800) {
             define('CURL_HTTP_VERSION_3ONLY', 31);
         }
     }
