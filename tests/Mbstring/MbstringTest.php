@@ -676,7 +676,9 @@ class MbstringTest extends TestCase
         $this->expectExceptionMessage($expectedError);
 
         set_error_handler(static function ($errno, $errstr, $errfile, $errline) {
-            throw new \ErrorException($errstr, $errno, $errfile, $errline);
+            if (\E_USER_WARNING === $errno) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
         });
 
         try {
@@ -864,7 +866,9 @@ class MbstringTest extends TestCase
         $this->expectExceptionMessage('mb_trim(): Argument #3 ($encoding) must be a valid encoding, "NULL" given');
 
         set_error_handler(static function ($errno, $errstr, $errfile, $errline) {
-            throw new \ErrorException($errstr, $errno, $errfile, $errline);
+            if (\E_USER_WARNING === $errno) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
         });
 
         try {
