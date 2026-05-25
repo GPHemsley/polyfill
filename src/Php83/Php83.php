@@ -40,57 +40,79 @@ final class Php83
         return \JSON_ERROR_NONE === json_last_error();
     }
 
+    /**
+     * @throws \ValueError
+     * @return false|never
+     */
+    private static function triggerMbValueError(string $message)
+    {
+        if (80000 > \PHP_VERSION_ID) {
+            trigger_error($message, \E_USER_WARNING);
+
+            return false;
+        }
+
+        throw new \ValueError($message);
+    }
+
     /** @return string|false */
     public static function mb_str_pad(string $string, int $length, string $pad_string = ' ', int $pad_type = \STR_PAD_RIGHT, ?string $encoding = null)
     {
-        if (!\in_array($pad_type, [\STR_PAD_RIGHT, \STR_PAD_LEFT, \STR_PAD_BOTH], true)) {
-            throw new \ValueError('mb_str_pad(): Argument #4 ($pad_type) must be STR_PAD_LEFT, STR_PAD_RIGHT, or STR_PAD_BOTH');
-        }
+        if ($encoding) {
+            $invalidEncodingMessage = \sprintf('mb_str_pad(): Argument #5 ($encoding) must be a valid encoding, "%s" given', $encoding);
+            $triggerError = false;
+            try {
+                if (!@mb_check_encoding('', $encoding)) {
+                    $triggerError = true;
+                }
+            } catch (\ValueError $e) {
+                self::triggerMbValueError($invalidEncodingMessage);
+            }
 
-        if (null === $encoding) {
+            if ($triggerError) {
+                return self::triggerMbValueError($invalidEncodingMessage);
+            }
+        } else {
             $encoding = mb_internal_encoding();
         }
 
-        $errorToTrigger = null;
-        try {
-            if (!@mb_check_encoding('', $encoding)) {
-                $errorToTrigger = \sprintf('mb_str_pad(): Argument #5 ($encoding) must be a valid encoding, "%s" given', $encoding);
-            }
-        } catch (\ValueError $e) {
-            $errorToTrigger = \sprintf('mb_str_pad(): Argument #5 ($encoding) must be a valid encoding, "%s" given', $encoding);
-        }
+        $input_length = mb_strlen($string, $encoding);
 
-        if (mb_strlen($pad_string, $encoding) <= 0) {
-            $errorToTrigger = 'mb_str_pad(): Argument #3 ($pad_string) must be a non-empty string';
-        }
-
-        if (null !== $errorToTrigger) {
-            if (80000 > \PHP_VERSION_ID) {
-                trigger_error($errorToTrigger, \E_USER_WARNING);
-
-                return false;
-            }
-
-            throw new \ValueError($errorToTrigger);
-        }
-
-        $paddingRequired = $length - mb_strlen($string, $encoding);
-
-        if ($paddingRequired < 1) {
+        if ($length < 0 || $length < $input_length) {
             return $string;
         }
 
-        switch ($pad_type) {
-            case \STR_PAD_LEFT:
-                return mb_substr(str_repeat($pad_string, $paddingRequired), 0, $paddingRequired, $encoding).$string;
-            case \STR_PAD_RIGHT:
-                return $string.mb_substr(str_repeat($pad_string, $paddingRequired), 0, $paddingRequired, $encoding);
-            default:
-                $leftPaddingLength = floor($paddingRequired / 2);
-                $rightPaddingLength = $paddingRequired - $leftPaddingLength;
-
-                return mb_substr(str_repeat($pad_string, $leftPaddingLength), 0, $leftPaddingLength, $encoding).$string.mb_substr(str_repeat($pad_string, $rightPaddingLength), 0, $rightPaddingLength, $encoding);
+        if (0 === \strlen($pad_string)) {
+            return self::triggerMbValueError('mb_str_pad(): Argument #3 ($pad_string) must be a non-empty string');
         }
+
+        if (!\in_array($pad_type, [\STR_PAD_RIGHT, \STR_PAD_LEFT, \STR_PAD_BOTH], true)) {
+            return self::triggerMbValueError('mb_str_pad(): Argument #4 ($pad_type) must be STR_PAD_LEFT, STR_PAD_RIGHT, or STR_PAD_BOTH');
+        }
+
+        $num_mb_pad_chars = $length - $input_length;
+
+        $left_pad = $right_pad = 0;
+
+        switch ($pad_type) {
+            case \STR_PAD_RIGHT:
+                $right_pad = $num_mb_pad_chars;
+                break;
+
+            case \STR_PAD_LEFT:
+                $left_pad = $num_mb_pad_chars;
+                break;
+
+            case \STR_PAD_BOTH:
+                $left_pad = floor($num_mb_pad_chars / 2);
+                $right_pad = $num_mb_pad_chars - $left_pad;
+                break;
+        }
+
+        $left_pad_string = mb_substr(str_repeat($pad_string, $left_pad), 0, $left_pad, $encoding);
+        $right_pad_string = mb_substr(str_repeat($pad_string, $right_pad), 0, $right_pad, $encoding);
+
+        return $left_pad_string . $string . $right_pad_string;
     }
 
     public static function str_increment(string $string): string
