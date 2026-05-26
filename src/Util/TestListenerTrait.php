@@ -93,7 +93,7 @@ class TestListenerTrait
 
                 try {
                     $r = new \ReflectionFunction($f['name']);
-                    if ($r->isUserDefined()) {
+                    if (!$r->isUserDefined()) {
                         throw new \ReflectionException();
                     }
                     if ('idn_to_ascii' === $f['name'] || 'idn_to_utf8' === $f['name']) {
