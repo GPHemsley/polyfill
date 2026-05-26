@@ -691,10 +691,6 @@ class MbstringTest extends TestCase
      */
     public function testMbStrPad(string $expectedResult, string $string, int $length, string $padString, int $padType, ?string $encoding = null)
     {
-        if ('UTF-32' === $encoding && \PHP_VERSION_ID < 73000) {
-            $this->markTestSkipped('PHP < 7.3 doesn\'t handle UTF-32 encoding properly');
-        }
-
         $this->assertSame($expectedResult, mb_convert_encoding(mb_str_pad($string, $length, $padString, $padType, $encoding), 'UTF-8', $encoding ?? mb_internal_encoding()));
     }
 
