@@ -21,7 +21,8 @@
     "require-dev": {
         "symfony/intl": "^5.4|^6.4",
         "symfony/phpunit-bridge": "^6.4",
-        "symfony/var-dumper": "^5.4|^6.4"
+        "symfony/var-dumper": "^5.4|^6.4",
+        "mcaskill/composer-exclude-files": "^4.0"
     },
     "replace": {
         "symfony/polyfill-apcu": "self.version",
@@ -77,5 +78,15 @@
             "src/Php73/Resources/stubs"
         ]
     },
-    "minimum-stability": "dev"
+    "extra": {
+        "exclude-from-files": [
+            "symfony/intl/Resources/functions.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "mcaskill/composer-exclude-files": true
+        }
+    }
 }
