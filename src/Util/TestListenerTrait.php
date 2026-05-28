@@ -32,6 +32,9 @@ class TestListenerTrait
         }
 
         $reflection_info = [
+            'fileName' => $reflection->getFileName(),
+            'startLine' => $reflection->getStartLine(),
+            'endLine' => $reflection->getEndLine(),
             'name' => $reflection->getName(),
             'shortName' => $reflection->getShortName(),
             'isVariadic' => $reflection->isVariadic(),
@@ -183,7 +186,8 @@ function {$f['name']}{$f['signature']}
 EOPHP
                 );
 
-                if (\PHP_VERSION_ID >= 80000 && $r && false === strpos($bootstrap->getPath(), 'Php7') && false === strpos($bootstrap->getPath(), 'Php80')) {
+                // if (\PHP_VERSION_ID >= 80000 && $r && false === strpos($bootstrap->getPath(), 'Php7') && false === strpos($bootstrap->getPath(), 'Php80')) {
+                if ($r) {
                     $originalSignature = ReflectionCaster::getSignature(ReflectionCaster::castFunctionAbstract($r, [], new Stub(), true));
                     $polyfillSignature = ReflectionCaster::castFunctionAbstract(new \ReflectionFunction($testNamespace.'\\'.$f['name']), [], new Stub(), true);
                     $polyfillSignature = ReflectionCaster::getSignature($polyfillSignature);
