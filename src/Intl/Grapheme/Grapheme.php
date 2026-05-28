@@ -194,9 +194,12 @@ final class Grapheme
         return mb_strstr($s, $needle, $beforeNeedle, 'UTF-8');
     }
 
-    public static function grapheme_str_split($s, $len = 1)
+    /**
+     * @return array|false
+     */
+    public static function grapheme_str_split(string $string, int $length = 1)
     {
-        if (0 > $len || 1073741823 < $len) {
+        if (0 > $length || 1073741823 < $length) {
             if (80000 > \PHP_VERSION_ID) {
                 return false;
             }
@@ -204,19 +207,19 @@ final class Grapheme
             throw new \ValueError('grapheme_str_split(): Argument #2 ($length) must be greater than 0 and less than or equal to 1073741823.');
         }
 
-        if ('' === $s) {
+        if ('' === $string) {
             return [];
         }
 
-        if (!preg_match_all('/('.SYMFONY_GRAPHEME_CLUSTER_RX.')/u', $s, $matches)) {
+        if (!preg_match_all('/('.SYMFONY_GRAPHEME_CLUSTER_RX.')/u', $string, $matches)) {
             return false;
         }
 
-        if (1 === $len) {
+        if (1 === $length) {
             return $matches[0];
         }
 
-        $chunks = array_chunk($matches[0], $len);
+        $chunks = array_chunk($matches[0], $length);
 
         foreach ($chunks as &$chunk) {
             $chunk = implode('', $chunk);
@@ -327,6 +330,9 @@ final class Grapheme
         return false !== $needlePos ? self::grapheme_strlen(substr($s, 0, $needlePos)) + $offset : false;
     }
 
+    /**
+     * @return string|false
+     */
     public static function grapheme_strrev(string $string)
     {
         if (!preg_match('//u', $string)) {

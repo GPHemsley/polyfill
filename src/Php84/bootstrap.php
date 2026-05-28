@@ -90,8 +90,8 @@ if (extension_loaded('bcmath')) {
     }
 }
 
-if (\PHP_VERSION_ID >= 80200) {
-    return require __DIR__.'/bootstrap82.php';
+if (\PHP_VERSION_ID >= 80000) {
+    return require __DIR__.'/bootstrap80.php';
 }
 
 if (extension_loaded('intl') && !function_exists('grapheme_str_split')) {
