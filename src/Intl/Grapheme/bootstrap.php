@@ -26,7 +26,7 @@ if (!defined('GRAPHEME_EXTR_MAXCHARS')) {
 }
 
 if (!function_exists('grapheme_extract')) {
-    function grapheme_extract($haystack, $size, $type = 0, $start = 0, &$next = 0) { return p\Grapheme::grapheme_extract($haystack, $size, $type, $start, $next); }
+    function grapheme_extract($haystack, $size, $type = \GRAPHEME_EXTR_COUNT, $start = 0, &$next = 0) { return p\Grapheme::grapheme_extract($haystack, $size, $type, $start, $next); }
 }
 if (!function_exists('grapheme_stripos')) {
     function grapheme_stripos($haystack, $needle, $offset = 0) { return p\Grapheme::grapheme_stripos($haystack, $needle, $offset); }
