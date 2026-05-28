@@ -11,18 +11,6 @@
 
 use Symfony\Polyfill\Intl\Idn as p;
 
-if (extension_loaded('intl')) {
-    return;
-}
-
-if (\PHP_VERSION_ID >= 80000) {
-    return require __DIR__.'/bootstrap80.php';
-}
-
-if (\PHP_VERSION_ID >= 70400) {
-    return require __DIR__.'/bootstrap74.php';
-}
-
 if (!defined('U_IDNA_PROHIBITED_ERROR')) {
     define('U_IDNA_PROHIBITED_ERROR', 66560);
 }
@@ -133,8 +121,8 @@ if (!defined('IDNA_ERROR_CONTEXTJ')) {
 }
 
 if (!function_exists('idn_to_ascii')) {
-    function idn_to_ascii($domain, $flags = \IDNA_DEFAULT, $variant = \INTL_IDNA_VARIANT_2003, &$idna_info = null) { return p\Idn::idn_to_ascii($domain, $flags, $variant, $idna_info); }
+    function idn_to_ascii(?string $domain, ?int $flags = \IDNA_DEFAULT, ?int $variant = \INTL_IDNA_VARIANT_UTS46, &$idna_info = null) { return p\Idn::idn_to_ascii((string) $domain, (int) $flags, (int) $variant, $idna_info); }
 }
 if (!function_exists('idn_to_utf8')) {
-    function idn_to_utf8($domain, $flags = \IDNA_DEFAULT, $variant = \INTL_IDNA_VARIANT_2003, &$idna_info = null) { return p\Idn::idn_to_utf8($domain, $flags, $variant, $idna_info); }
+    function idn_to_utf8(?string $domain, ?int $flags = \IDNA_DEFAULT, ?int $variant = \INTL_IDNA_VARIANT_UTS46, &$idna_info = null) { return p\Idn::idn_to_utf8((string) $domain, (int) $flags, (int) $variant, $idna_info); }
 }

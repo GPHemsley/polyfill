@@ -118,7 +118,9 @@ class TestListenerTrait
                 $bootstrap .= '81';
             } elseif (\PHP_VERSION_ID >= 80000 && file_exists($bootstrap.'80.php')) {
                 $bootstrap .= '80';
-            } elseif (\PHP_VERSION_ID < 80000 && file_exists($bootstrap.'72.php')) {
+            } elseif (\PHP_VERSION_ID >= 70400 && file_exists($bootstrap.'74.php')) {
+                $bootstrap .= '74';
+            } elseif (\PHP_VERSION_ID >= 70200 && file_exists($bootstrap.'72.php')) {
                 $bootstrap .= '72';
             }
             $bootstrap = new \SplFileObject($bootstrap.'.php');
