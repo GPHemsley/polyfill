@@ -23,6 +23,64 @@ class TestListenerTrait
 {
     public static $enabledPolyfills;
 
+    public static function get_reflection_info($function_name) {
+        try {
+            $reflection = new \ReflectionFunction($function_name);
+        } catch (\ReflectionException $e) {
+            var_dump($e->getMessage());
+            return null;
+        }
+
+        $reflection_info = [
+            'name' => $reflection->getName(),
+            'shortName' => $reflection->getShortName(),
+            'isVariadic' => $reflection->isVariadic(),
+            'parameters' => [],
+            'returnsReference' => $reflection->returnsReference(),
+        ];
+
+        if (\method_exists($reflection, 'hasTentativeReturnType') && \method_exists($reflection, 'getTentativeReturnType') && $reflection->hasTentativeReturnType()) {
+            $tentativeReturnType = $reflection->getTentativeReturnType();
+
+            $reflection_info['tentativeReturnType'] = (null !== $tentativeReturnType) ? (string) $tentativeReturnType : null;
+        }
+
+        if ($reflection->hasReturnType()) {
+            $returnType = $reflection->getReturnType();
+
+            $reflection_info['returnType'] = (null !== $returnType) ? (string) $returnType : null;
+        }
+
+        foreach ($reflection->getParameters() as $parameter) {
+            $parameter_info = [
+                'name' => $parameter->getName(),
+                'isOptional' => $parameter->isOptional(),
+                'isPassedByReference' => $parameter->isPassedByReference(),
+                'isVariadic' => $parameter->isVariadic(),
+            ];
+
+            if ($parameter->hasType()) {
+                $parameterType = $parameter->getType();
+
+                $parameter_info['type'] = (null !== $parameterType) ? (string) $parameterType : null;
+            }
+
+            if ($parameter->isDefaultValueAvailable()) {
+                $parameter_info['default'] = [
+                    'value' => $parameter->getDefaultValue(),
+                ];
+
+                if ($parameter->isDefaultValueConstant()) {
+                    $parameter_info['default']['constant'] = $parameter->getDefaultValueConstantName();
+                }
+            }
+
+            $reflection_info['parameters'][$parameter->getPosition()] = $parameter_info;
+        }
+
+        return $reflection_info;
+    }
+
     public function startTestSuite($mainSuite)
     {
         $warnings = [];
@@ -130,25 +188,30 @@ EOPHP
                     $polyfillSignature = ReflectionCaster::castFunctionAbstract(new \ReflectionFunction($testNamespace.'\\'.$f['name']), [], new Stub(), true);
                     $polyfillSignature = ReflectionCaster::getSignature($polyfillSignature);
 
-                    if ('mb_get_info' === $r->name && false === strpos($originalSignature, '|null') && false !== strpos($polyfillSignature, '|null')) {
-                        // Added to PHP 8.2.14/8.3.1
-                        $originalSignature .= '|null';
-                    }
+                    // if ('mb_get_info' === $r->name && false === strpos($originalSignature, '|null') && false !== strpos($polyfillSignature, '|null')) {
+                    //     // Added to PHP 8.2.14/8.3.1
+                    //     $originalSignature .= '|null';
+                    // }
 
-                    if (str_ends_with($bootstrap->getPath(), 'bootstrap.php')) {
-                        // mixed return type cannot be used before PHP 8
-                        $originalSignature = str_replace(': mixed', '', $originalSignature);
-                    }
+                    // if (str_ends_with($bootstrap->getPath(), 'bootstrap.php')) {
+                    //     // mixed return type cannot be used before PHP 8
+                    //     $originalSignature = str_replace(': mixed', '', $originalSignature);
+                    // }
 
-                    $map = [
-                        '?' => '',
-                        'array|string|null $string' => 'array|string $string',
-                        'array|string|null $from_encoding = null' => 'array|string|null $from_encoding = null',
-                        'array|string|null $from_encoding' => 'array|string $from_encoding',
-                    ];
+                    // $map = [
+                    //     '?' => '',
+                    //     'array|string|null $string' => 'array|string $string',
+                    //     'array|string|null $from_encoding = null' => 'array|string|null $from_encoding = null',
+                    //     'array|string|null $from_encoding' => 'array|string $from_encoding',
+                    // ];
 
-                    if (strtr($polyfillSignature, $map) !== str_replace('?', '', $originalSignature)) {
-                        $warnings[] = TestListener::warning("Incompatible signature for PHP >= 8 in {$bootstrap->getPathname()}:\n- {$f['name']}$originalSignature\n+ {$f['name']}$polyfillSignature");
+                    // if (strtr($polyfillSignature, $map) !== str_replace('?', '', $originalSignature)) {
+                    if ($polyfillSignature !== $originalSignature) {
+                        ob_start();
+                        print_r(self::get_reflection_info($f['name']));
+                        $reflection_info = ob_get_contents();
+                        ob_end_clean();
+                        $warnings[] = TestListener::warning("Incompatible signature for PHP >= 8 in {$bootstrap->getPathname()}:\n- {$f['name']}$originalSignature\n+ {$f['name']}$polyfillSignature\n" . $reflection_info);
                     }
                 }
             }
