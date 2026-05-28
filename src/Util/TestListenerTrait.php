@@ -215,7 +215,7 @@ EOPHP
                         print_r(self::get_reflection_info($f['name']));
                         $reflection_info = ob_get_contents();
                         ob_end_clean();
-                        $warnings[] = TestListener::warning("Incompatible signature for PHP >= 8 in {$bootstrap->getPathname()}:\n- {$f['name']}$originalSignature\n+ {$f['name']}$polyfillSignature\n" . $reflection_info);
+                        $warnings[] = TestListener::warning("Incompatible signature for PHP version in {$bootstrap->getPathname()}:\n- {$f['name']}$originalSignature\n+ {$f['name']}$polyfillSignature\n" . $reflection_info);
                     }
                 }
             }
