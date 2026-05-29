@@ -11,6 +11,16 @@
 
 use Symfony\Polyfill\Mbstring as p;
 
+if (!defined('MB_CASE_UPPER')) {
+    define('MB_CASE_UPPER', 0);
+}
+if (!defined('MB_CASE_LOWER')) {
+    define('MB_CASE_LOWER', 1);
+}
+if (!defined('MB_CASE_TITLE')) {
+    define('MB_CASE_TITLE', 2);
+}
+
 if (!function_exists('mb_convert_encoding')) {
     function mb_convert_encoding(array|string|null $string, ?string $to_encoding, array|string|null $from_encoding = null): array|string|false { return p\Mbstring::mb_convert_encoding($string ?? '', (string) $to_encoding, $from_encoding); }
 }
@@ -150,18 +160,4 @@ if (!function_exists('mb_ltrim')) {
 
 if (!function_exists('mb_rtrim')) {
     function mb_rtrim(?string $string, ?string $characters = null, ?string $encoding = null): string { return p\Mbstring::mb_rtrim((string) $string, $characters, $encoding); }
-}
-
-if (extension_loaded('mbstring')) {
-    return;
-}
-
-if (!defined('MB_CASE_UPPER')) {
-    define('MB_CASE_UPPER', 0);
-}
-if (!defined('MB_CASE_LOWER')) {
-    define('MB_CASE_LOWER', 1);
-}
-if (!defined('MB_CASE_TITLE')) {
-    define('MB_CASE_TITLE', 2);
 }

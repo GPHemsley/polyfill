@@ -9,6 +9,10 @@
  * file that was distributed with this source code.
  */
 
+if (extension_loaded('mbstring')) {
+    return;
+}
+
 if (\PHP_VERSION_ID >= 80000) {
     return require __DIR__.'/bootstrap80.php';
 }
